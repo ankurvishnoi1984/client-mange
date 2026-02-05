@@ -1,0 +1,122 @@
+/* ===== Page ===== */
+.erp-page {
+  background: #f1f3f6;
+  min-height: 100vh;
+  padding: 22px 30px;
+  font-family: Inter, sans-serif;
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* Search */
+.search-box {
+  display: flex;
+  width: 260px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+}
+
+.search-box button {
+  background: #0b3a6f;
+  color: white;
+  border: none;
+  padding: 0 14px;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Create button */
+.btn-add {
+  background: #0b3a6f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.btn-add:hover {
+  background: #082c52;
+}
+
+/* ===== Table ===== */
+.table-wrapper {
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Header */
+.erp-table thead {
+  background: #0b3a6f;
+  color: white;
+}
+
+.erp-table th {
+  padding: 12px 14px;
+  font-weight: 600;
+}
+
+/* Body */
+.erp-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.erp-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===== Badges ===== */
+.badge-success-soft {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-danger-soft {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== 3-dot button ===== */
+.icon-menu-btn {
+  border: none;
+  background: #e2e8f0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+.icon-menu-btn:hover {
+  background: #cbd5e1;
+}
+.row-disabled {
+  opacity: 0.5;
+  background: #f3f4f6 !important;
+}

@@ -1,0 +1,117 @@
+/* Page layout */
+.page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 40px 60px;
+  background: #f3f4f6;
+  font-family: Inter, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Header */
+.title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: left; /* ← not centered */
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 6px;
+  margin-bottom: 28px;
+}
+
+/* Card FULL WIDTH */
+.card {
+  width: 100%;              /* ⭐ FULL WIDTH */
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Header row */
+.table thead {
+  background: #173a63;   /* dark navy like reference */
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 16px 20px;
+  text-align: left;
+}
+
+/* Row style */
+.table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Badge */
+.badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Action button */
+.action-btn {
+  background: #f1f5f9;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: #e2e8f0;
+}
+
+/* Dropdown menu */
+.menu {
+  position: absolute;
+  right: 0;
+  top: 38px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  width: 140px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.menu-item {
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #f3f4f6;
+}
+
+.menu-item.delete {
+  color: #dc2626;
+}
