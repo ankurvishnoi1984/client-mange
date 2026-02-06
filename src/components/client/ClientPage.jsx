@@ -1,87 +1,112 @@
 import { ThreeDotsVertical, PlusLg, Search } from "react-bootstrap-icons";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import axios from "axios";
+import { BASEURL } from "../../constant";
 
 
 export default function ClientsPage() {
-  const clients = [
-    {
-      id: 1,
-      name: "ABC Pharma",
-      shortcode: "ABC",
-      contactperson: "John Doe",
-      contactnumber: "9876543210",
-      domain_url: "abcpharma.com",
-      isallowmultisession: true,
-    },
-    {
-      id: 2,
-      name: "Netcast Services",
-      shortcode: "NET",
-      contactperson: "Amit Sharma",
-      contactnumber: "9123456780",
-      domain_url: "netcastservice.com",
-      isallowmultisession: false,
-    },
-  ];
-
+ const [clients, setClients] = useState([]);
+const [loading, setLoading] = useState(false);
+const [page, setPage] = useState(1);
+const [limit] = useState(10);
+const [total, setTotal] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
 const [clientsData, setClientsData] = useState(clients);
 const [editId, setEditId] = useState(null);
 
 
-const [form, setForm] = useState({
+
+
+const [formData, setFormData] = useState({
   name: "",
   shortcode: "",
   contactperson: "",
   contactnumber: "",
   domain_url: "",
-  isallowmultisession: false,
-  disabled: false,
+  layoutid: "",
+  themeid: "",
+  isallowmultisession: "Y",
+  clientlogo: null,
 });
+useEffect(() => {
+  fetchClients(page);
+}, [page]);
 
+const fetchClients = async (pageNumber) => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get(
+      `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}`
+    );
+
+    setClients(res.data.data);
+    setTotal(res.data.pagination.total);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+const totalPages = Math.ceil(total / limit);
 const handleChange = (e) => {
-  const { name, value, type, checked } = e.target;
+  const { name, value, type, checked, files } = e.target;
 
-  setForm({
-    ...form,
-    [name]: type === "checkbox" ? checked : value,
-  });
+  if (type === "checkbox") {
+    setFormData(prev => ({
+      ...prev,
+      [name]: checked ? "Y" : "N"
+    }));
+  }
+  else if (type === "file") {
+    setFormData(prev => ({
+      ...prev,
+      [name]: files[0]
+    }));
+  }
+  else {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
 };
 
-const handleSave = () => {
-  if (editId) {
-    // update
-    setClientsData(
-      clientsData.map((c) =>
-        c.id === editId ? { ...form, id: editId } : c
-      )
-    );
-  } else {
-    // add
-    setClientsData([
-      ...clientsData,
-      { ...form, id: Date.now() },
-    ]);
+const handleSave = async () => {
+  try {
+    const data = new FormData();
+
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== null && formData[key] !== "") {
+        data.append(key, formData[key]);
+      }
+    });
+
+    // required
+    data.append("createdby", 1); // replace with logged-in user id
+
+   const res = await axios.post(
+  `${BASEURL}/clients/addNewClient`,
+  data
+);
+
+    console.log(res.data);
+
+    alert("Client created successfully");
+
+    setShowModal(false);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error creating client");
   }
-
-  setShowModal(false);
-  setEditId(null);
-
-  setForm({
-    name: "",
-    shortcode: "",
-    contactperson: "",
-    contactnumber: "",
-    domain_url: "",
-    isallowmultisession: false,
-    disabled: false,
-  });
 };
 
 const handleEdit = (client) => {
-  setForm(client);
+
   setEditId(client.id);
   setShowModal(true);
 };
@@ -134,67 +159,127 @@ const handleDisable = (id) => {
             </tr>
           </thead>
 
-          <tbody>
-            {clients.map((c) => (
-       <tr key={c.id} className={c.disabled ? "row-disabled" : ""}>
-                <td className="fw-semibold">{c.name}</td>
-                <td>{c.shortcode}</td>
-                <td>{c.contactperson}</td>
-                <td>{c.contactnumber}</td>
-                <td className="text-primary">{c.domain_url}</td>
+      <tbody>
+  {loading ? (
+    <tr>
+      <td colSpan="7" className="text-center py-4">
+        Loading...
+      </td>
+    </tr>
+  ) : clients.length === 0 ? (
+    <tr>
+      <td colSpan="7" className="text-center py-4 text-muted">
+        No clients found
+      </td>
+    </tr>
+  ) : (
+    clients.map((c) => (
+      <tr
+        key={c.client_code}   // 🔥 use API key directly
+        className={c.status === "N" ? "row-disabled" : ""}
+      >
+        <td className="fw-semibold">{c.name}</td>
+        <td>{c.shortcode}</td>
+        <td>{c.contactperson}</td>
+        <td>{c.contactnumber}</td>
+        <td className="text-primary">{c.domain_url}</td>
 
-                {/* status badge */}
-                <td>
-                  <span
-                    className={
-                      c.isallowmultisession
-                        ? "badge-success-soft"
-                        : "badge-danger-soft"
-                    }
-                  >
-                    {c.isallowmultisession ? "Yes" : "No"}
-                  </span>
-                </td>
+        {/* Multi session badge */}
+        <td>
+          <span
+            className={
+              c.status === "Y"
+                ? "badge-success-soft"
+                : "badge-danger-soft"
+            }
+          >
+            {c.status === "Y" ? "Yes" : "No"}
+          </span>
+        </td>
 
-                {/* ===== 3 Dot Menu ===== */}
-                <td className="text-center">
-                  <div className="dropdown position-static">
-                    <button
-                      className="icon-menu-btn"
-                      data-bs-toggle="dropdown"
-                    >
-                      <ThreeDotsVertical />
-                    </button>
+        {/* Action menu */}
+        <td className="text-center">
+          <div className="dropdown position-static">
+            <button
+              className="icon-menu-btn"
+              data-bs-toggle="dropdown"
+            >
+              <ThreeDotsVertical />
+            </button>
 
-                 <ul className="dropdown-menu dropdown-menu-end shadow">
-  <li>
-    <button
-      className="dropdown-item"
-      onClick={() => handleEdit(c)}
-    >
-      Edit
-    </button>
-  </li>
+            <ul className="dropdown-menu dropdown-menu-end shadow">
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleEdit(c)}
+                >
+                  Edit
+                </button>
+              </li>
 
-  <li>
-    <button
-      className="dropdown-item text-warning"
-      onClick={() => handleDisable(c.id)}
-    >
-      {c.disabled ? "Enable" : "Disable"}
-    </button>
-  </li>
-</ul>
+              <li>
+                <button
+                  className="dropdown-item text-warning"
+                  onClick={() => handleDisable(c.client_code)}
+                >
+                  {c.status === "N" ? "Enable" : "Disable"}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
 
-                  </div>
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
 
         </table>
       </div>
+      <div className="d-flex justify-content-between align-items-center mt-3">
+
+  <span className="text-muted">
+    Page {page} of {totalPages}
+  </span>
+
+  <div className="d-flex gap-2">
+
+    <button
+      className="btn btn-sm btn-outline-secondary"
+      disabled={page === 1}
+      onClick={() => setPage((p) => p - 1)}
+    >
+      Prev
+    </button>
+
+    {[...Array(totalPages)].slice(0, 5).map((_, i) => {
+      const pageNumber = i + 1;
+
+      return (
+        <button
+          key={pageNumber}
+          className={`btn btn-sm ${
+            page === pageNumber
+              ? "btn-primary"
+              : "btn-outline-secondary"
+          }`}
+          onClick={() => setPage(pageNumber)}
+        >
+          {pageNumber}
+        </button>
+      );
+    })}
+
+    <button
+      className="btn btn-sm btn-outline-secondary"
+      disabled={page === totalPages}
+      onClick={() => setPage((p) => p + 1)}
+    >
+      Next
+    </button>
+
+  </div>
+</div>
     </div>
     {/* ========= Create Client Modal ========= */}
 <Modal show={showModal} onHide={() => setShowModal(false)} centered>
