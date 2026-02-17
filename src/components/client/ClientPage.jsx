@@ -1,340 +1,438 @@
 import { ThreeDotsVertical, PlusLg, Search } from "react-bootstrap-icons";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { BASEURL } from "../../constant";
+import Select from "react-select";
 
 
 export default function ClientsPage() {
- const [clients, setClients] = useState([]);
-const [loading, setLoading] = useState(false);
-const [page, setPage] = useState(1);
-const [limit] = useState(10);
-const [total, setTotal] = useState(0);
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
-const [clientsData, setClientsData] = useState(clients);
-const [editId, setEditId] = useState(null);
+  const [clientsData, setClientsData] = useState(clients);
+  const [editId, setEditId] = useState(null);
+
+  const [userOptions, setUserOptions] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
 
 
 
 
-const [formData, setFormData] = useState({
-  name: "",
-  shortcode: "",
-  contactperson: "",
-  contactnumber: "",
-  domain_url: "",
-  layoutid: "",
-  themeid: "",
-  isallowmultisession: "Y",
-  clientlogo: null,
-});
-useEffect(() => {
-  fetchClients(page);
-}, [page]);
+  const [formData, setFormData] = useState({
+    name: "",
+    shortcode: "",
+    contactperson: "",
+    contactnumber: "",
+    domain_url: "",
+    layoutid: "",
+    themeid: "",
+    isallowmultisession: "Y",
+    clientlogo: null,
+  });
+  useEffect(() => {
+    fetchClients(page);
+  }, [page]);
 
-const fetchClients = async (pageNumber) => {
-  try {
-    setLoading(true);
+  const fetchClients = async (pageNumber) => {
+    try {
+      setLoading(true);
 
-    const res = await axios.get(
-      `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}`
-    );
+      const res = await axios.get(
+        `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}`
+      );
 
-    setClients(res.data.data);
-    setTotal(res.data.pagination.total);
+      setClients(res.data.data);
+      setTotal(res.data.pagination.total);
 
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
-const totalPages = Math.ceil(total / limit);
-const handleChange = (e) => {
-  const { name, value, type, checked, files } = e.target;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchUsers = async (search = "") => {
+    try {
+      const res = await axios.get(`${BASEURL}/users`, {
+        params: {
+          page: 1,
+          limit: 20,
+          search
+        }
+      });
 
-  if (type === "checkbox") {
-    setFormData(prev => ({
-      ...prev,
-      [name]: checked ? "Y" : "N"
-    }));
-  }
-  else if (type === "file") {
-    setFormData(prev => ({
-      ...prev,
-      [name]: files[0]
-    }));
-  }
-  else {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }
-};
+      const options = res.data.data.map(u => ({
+        value: u.userid,
+        label: `${u.displayname} (${u.username})`
+      }));
 
-const handleSave = async () => {
-  try {
-    const data = new FormData();
+      setUserOptions(options);
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    }
+  };
+  useEffect(() => {
+    if (showModal) {
+      fetchUsers();
+    }
+  }, [showModal])
+  const totalPages = Math.ceil(total / limit);
+  const handleChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
 
-    Object.keys(formData).forEach(key => {
-      if (formData[key] !== null && formData[key] !== "") {
-        data.append(key, formData[key]);
-      }
-    });
+    if (type === "checkbox") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked ? "Y" : "N"
+      }));
+    }
+    else if (type === "file") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: files[0]
+      }));
+    }
+    else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
 
-    // required
-    data.append("createdby", 1); // replace with logged-in user id
-
-   const res = await axios.post(
-  `${BASEURL}/clients/addNewClient`,
-  data
-);
-
-    console.log(res.data);
-
-    alert("Client created successfully");
-
-    setShowModal(false);
-
-  } catch (err) {
-    console.error(err);
-    alert("Error creating client");
-  }
-};
-
-const handleEdit = (client) => {
-
-  setEditId(client.id);
-  setShowModal(true);
-};
-const handleDisable = (id) => {
-  setClientsData(
-    clientsData.map((c) =>
-      c.id === id ? { ...c, disabled: !c.disabled } : c
-    )
+  /*const handleSave = async () => {
+    try {
+      const data = new FormData();
+  
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null && formData[key] !== "") {
+          data.append(key, formData[key]);
+        }
+      });
+  
+      // required
+      data.append("createdby", 1); // replace with logged-in user id
+  
+     const res = await axios.post(
+    `${BASEURL}/clients/addNewClient`,
+    data
   );
-};
+  
+      console.log(res.data);
+  
+      alert("Client created successfully");
+  
+      setShowModal(false);
+  
+    } catch (err) {
+      console.error(err);
+      alert("Error creating client");
+    }
+  };*/
+
+
+  const handleSave = async () => {
+    try {
+      const data = new FormData();
+
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null && formData[key] !== "") {
+          data.append(key, formData[key]);
+        }
+      });
+
+      data.append("createdby", 1);
+
+      // ✅ STEP 1: create client
+      const res = await axios.post(
+        `${BASEURL}/clients/addNewClient`,
+        data
+      );
+
+      const clientCode =
+        res.data?.data?.client_code ||
+        res.data?.client_code;
+
+      // ✅ STEP 2: map users (ONLY if selected)
+      if (selectedUsers.length > 0 && clientCode) {
+        const mappings = selectedUsers.map(u => ({
+          userid: u.value,
+          client_code: clientCode,
+          status: "Y",
+          // createdby: 1
+        }));
+
+        await axios.post(
+          `${BASEURL}/users/user-client-mapping`,
+          { mappings }
+        );
+      }
+
+      alert("Client created successfully");
+
+      setSelectedUsers([]);
+      setShowModal(false);
+
+    } catch (err) {
+      console.error(err);
+      alert("Error creating client");
+    } finally {
+      fetchClients(page);
+    }
+  };
+
+  const handleEdit = (client) => {
+
+    setEditId(client.id);
+    setShowModal(true);
+  };
+  const handleDisable = (id) => {
+    setClientsData(
+      clientsData.map((c) =>
+        c.id === id ? { ...c, disabled: !c.disabled } : c
+      )
+    );
+  };
 
 
   return (
     <>
-    <div className="erp-page">
+      <div className="erp-page">
 
-      {/* ================= Toolbar ================= */}
-      <div className="toolbar">
+        {/* ================= Toolbar ================= */}
+        <div className="toolbar">
 
-        {/* Search */}
-        <div className="search-box">
-          <input placeholder="Search for..." />
-          <button>
-            <Search />
+          {/* Search */}
+          <div className="search-box">
+            <input placeholder="Search for..." />
+            <button>
+              <Search />
+            </button>
+          </div>
+
+          {/* Create Client */}
+          <button className="btn-add" onClick={() => setShowModal(true)}>
+            <PlusLg className="me-2" />
+            Create Client
           </button>
         </div>
 
-        {/* Create Client */}
-    <button className="btn-add" onClick={() => setShowModal(true)}>
-          <PlusLg className="me-2" />
-          Create Client
-        </button>
-      </div>
+
+        {/* ================= Table ================= */}
+        <div className="table-wrapper">
+
+          <table className="erp-table">
+
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Shortcode</th>
+                <th>Contact Person</th>
+                <th>Contact Number</th>
+                <th>Domain URL</th>
+                <th>Multi Session</th>
+                <th className="text-center">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-4">
+                    Loading...
+                  </td>
+                </tr>
+              ) : clients.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-4 text-muted">
+                    No clients found
+                  </td>
+                </tr>
+              ) : (
+                clients.map((c) => (
+                  <tr
+                    key={c.client_code}   // 🔥 use API key directly
+                    className={c.status === "N" ? "row-disabled" : ""}
+                  >
+                    <td className="fw-semibold">{c.name}</td>
+                    <td>{c.shortcode}</td>
+                    <td>{c.contactperson}</td>
+                    <td>{c.contactnumber}</td>
+                    <td className="text-primary">{c.domain_url}</td>
+
+                    {/* Multi session badge */}
+                    <td>
+                      <span
+                        className={
+                          c.status === "Y"
+                            ? "badge-success-soft"
+                            : "badge-danger-soft"
+                        }
+                      >
+                        {c.status === "Y" ? "Yes" : "No"}
+                      </span>
+                    </td>
+
+                    {/* Action menu */}
+                    <td className="text-center">
+                      <div className="dropdown position-static">
+                        <button
+                          className="icon-menu-btn"
+                          data-bs-toggle="dropdown"
+                        >
+                          <ThreeDotsVertical />
+                        </button>
+
+                        <ul className="dropdown-menu dropdown-menu-end shadow">
+                          <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleEdit(c)}
+                            >
+                              Edit
+                            </button>
+                          </li>
+
+                          <li>
+                            <button
+                              className="dropdown-item text-warning"
+                              onClick={() => handleDisable(c.client_code)}
+                            >
+                              {c.status === "N" ? "Enable" : "Disable"}
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
 
 
-      {/* ================= Table ================= */}
-      <div className="table-wrapper">
+          </table>
+        </div>
+        <div className="d-flex justify-content-between align-items-center mt-3">
 
-        <table className="erp-table">
-
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Shortcode</th>
-              <th>Contact Person</th>
-              <th>Contact Number</th>
-              <th>Domain URL</th>
-              <th>Multi Session</th>
-              <th className="text-center">Action</th>
-            </tr>
-          </thead>
-
-      <tbody>
-  {loading ? (
-    <tr>
-      <td colSpan="7" className="text-center py-4">
-        Loading...
-      </td>
-    </tr>
-  ) : clients.length === 0 ? (
-    <tr>
-      <td colSpan="7" className="text-center py-4 text-muted">
-        No clients found
-      </td>
-    </tr>
-  ) : (
-    clients.map((c) => (
-      <tr
-        key={c.client_code}   // 🔥 use API key directly
-        className={c.status === "N" ? "row-disabled" : ""}
-      >
-        <td className="fw-semibold">{c.name}</td>
-        <td>{c.shortcode}</td>
-        <td>{c.contactperson}</td>
-        <td>{c.contactnumber}</td>
-        <td className="text-primary">{c.domain_url}</td>
-
-        {/* Multi session badge */}
-        <td>
-          <span
-            className={
-              c.status === "Y"
-                ? "badge-success-soft"
-                : "badge-danger-soft"
-            }
-          >
-            {c.status === "Y" ? "Yes" : "No"}
+          <span className="text-muted">
+            Page {page} of {totalPages}
           </span>
-        </td>
 
-        {/* Action menu */}
-        <td className="text-center">
-          <div className="dropdown position-static">
+          <div className="d-flex gap-2">
+
             <button
-              className="icon-menu-btn"
-              data-bs-toggle="dropdown"
+              className="btn btn-sm btn-outline-secondary"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
             >
-              <ThreeDotsVertical />
+              Prev
             </button>
 
-            <ul className="dropdown-menu dropdown-menu-end shadow">
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => handleEdit(c)}
-                >
-                  Edit
-                </button>
-              </li>
+            {[...Array(totalPages)].slice(0, 5).map((_, i) => {
+              const pageNumber = i + 1;
 
-              <li>
+              return (
                 <button
-                  className="dropdown-item text-warning"
-                  onClick={() => handleDisable(c.client_code)}
+                  key={pageNumber}
+                  className={`btn btn-sm ${page === pageNumber
+                      ? "btn-primary"
+                      : "btn-outline-secondary"
+                    }`}
+                  onClick={() => setPage(pageNumber)}
                 >
-                  {c.status === "N" ? "Enable" : "Disable"}
+                  {pageNumber}
                 </button>
-              </li>
-            </ul>
+              );
+            })}
+
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </button>
+
           </div>
-        </td>
-      </tr>
-    ))
-  )}
-</tbody>
-
-
-        </table>
+        </div>
       </div>
-      <div className="d-flex justify-content-between align-items-center mt-3">
+      {/* ========= Create Client Modal ========= */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Create Client</Modal.Title>
+        </Modal.Header>
 
-  <span className="text-muted">
-    Page {page} of {totalPages}
-  </span>
+        <Modal.Body>
+          <Form>
 
-  <div className="d-flex gap-2">
+            <Form.Group className="mb-2">
+              <Form.Label>Name</Form.Label>
+              <Form.Control name="name" onChange={handleChange} />
+            </Form.Group>
 
-    <button
-      className="btn btn-sm btn-outline-secondary"
-      disabled={page === 1}
-      onClick={() => setPage((p) => p - 1)}
-    >
-      Prev
-    </button>
+            <Form.Group className="mb-2">
+              <Form.Label>Shortcode</Form.Label>
+              <Form.Control name="shortcode" onChange={handleChange} />
+            </Form.Group>
 
-    {[...Array(totalPages)].slice(0, 5).map((_, i) => {
-      const pageNumber = i + 1;
+            <Form.Group className="mb-2">
+              <Form.Label>Contact Person</Form.Label>
+              <Form.Control name="contactperson" onChange={handleChange} />
+            </Form.Group>
 
-      return (
-        <button
-          key={pageNumber}
-          className={`btn btn-sm ${
-            page === pageNumber
-              ? "btn-primary"
-              : "btn-outline-secondary"
-          }`}
-          onClick={() => setPage(pageNumber)}
-        >
-          {pageNumber}
-        </button>
-      );
-    })}
+            <Form.Group className="mb-2">
+              <Form.Label>Contact Number</Form.Label>
+              <Form.Control name="contactnumber" onChange={handleChange} />
+            </Form.Group>
 
-    <button
-      className="btn btn-sm btn-outline-secondary"
-      disabled={page === totalPages}
-      onClick={() => setPage((p) => p + 1)}
-    >
-      Next
-    </button>
+            <Form.Group className="mb-2">
+              <Form.Label>Domain URL</Form.Label>
+              <Form.Control name="domain_url" onChange={handleChange} />
+            </Form.Group>
 
-  </div>
-</div>
-    </div>
-    {/* ========= Create Client Modal ========= */}
-<Modal show={showModal} onHide={() => setShowModal(false)} centered>
-  <Modal.Header closeButton>
-    <Modal.Title>Create Client</Modal.Title>
-  </Modal.Header>
+            <Form.Group className="mb-2">
+              <Form.Label>Select Users</Form.Label>
 
-  <Modal.Body>
-    <Form>
+              <Select
+                isMulti
+                options={userOptions}
+                value={selectedUsers}
+                onChange={(selected) => setSelectedUsers(selected)}
+                onInputChange={(input) => {
+                  setUserSearch(input);
+                  fetchUsers(input);
+                }}
+                placeholder="Search and select users..."
+                noOptionsMessage={() => "No users found"}
+              />
+            </Form.Group>
 
-      <Form.Group className="mb-2">
-        <Form.Label>Name</Form.Label>
-        <Form.Control name="name" onChange={handleChange} />
-      </Form.Group>
 
-      <Form.Group className="mb-2">
-        <Form.Label>Shortcode</Form.Label>
-        <Form.Control name="shortcode" onChange={handleChange} />
-      </Form.Group>
+            <Form.Check
+              type="checkbox"
+              label="Allow Multi Session"
+              name="isallowmultisession"
+              onChange={handleChange}
+            />
 
-      <Form.Group className="mb-2">
-        <Form.Label>Contact Person</Form.Label>
-        <Form.Control name="contactperson" onChange={handleChange} />
-      </Form.Group>
+          </Form>
+        </Modal.Body>
 
-      <Form.Group className="mb-2">
-        <Form.Label>Contact Number</Form.Label>
-        <Form.Control name="contactnumber" onChange={handleChange} />
-      </Form.Group>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
 
-      <Form.Group className="mb-2">
-        <Form.Label>Domain URL</Form.Label>
-        <Form.Control name="domain_url" onChange={handleChange} />
-      </Form.Group>
-
-      <Form.Check
-        type="checkbox"
-        label="Allow Multi Session"
-        name="isallowmultisession"
-        onChange={handleChange}
-      />
-
-    </Form>
-  </Modal.Body>
-
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowModal(false)}>
-      Cancel
-    </Button>
-
-    <Button style={{ background: "#0b3a6f" }} onClick={handleSave}>
-      Save Client
-    </Button>
-  </Modal.Footer>
-</Modal>
+          <Button style={{ background: "#0b3a6f" }} onClick={handleSave}>
+            Save Client
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
     </>
   );
