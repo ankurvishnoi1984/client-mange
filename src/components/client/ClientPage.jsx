@@ -4,6 +4,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { BASEURL } from "../../constant";
 import Select from "react-select";
+import EditClientModal from "./EditModal";
 
 
 export default function ClientsPage() {
@@ -22,6 +23,14 @@ export default function ClientsPage() {
   const [userSearch, setUserSearch] = useState("");
 
 
+
+  const [editModal, setEditModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  const openEdit = (client) => {
+    setSelectedClient(client);
+    setEditModal(true);
+  };
 
 
   const [formData, setFormData] = useState({
@@ -105,35 +114,6 @@ export default function ClientsPage() {
     }
   };
 
-  /*const handleSave = async () => {
-    try {
-      const data = new FormData();
-  
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== "") {
-          data.append(key, formData[key]);
-        }
-      });
-  
-      // required
-      data.append("createdby", 1); // replace with logged-in user id
-  
-     const res = await axios.post(
-    `${BASEURL}/clients/addNewClient`,
-    data
-  );
-  
-      console.log(res.data);
-  
-      alert("Client created successfully");
-  
-      setShowModal(false);
-  
-    } catch (err) {
-      console.error(err);
-      alert("Error creating client");
-    }
-  };*/
 
 
   const handleSave = async () => {
@@ -187,9 +167,7 @@ export default function ClientsPage() {
   };
 
   const handleEdit = (client) => {
-
-    setEditId(client.id);
-    setShowModal(true);
+    
   };
   const handleDisable = (id) => {
     setClientsData(
@@ -269,12 +247,12 @@ export default function ClientsPage() {
                     <td>
                       <span
                         className={
-                          c.status === "Y"
+                          c.isallowmultisession === "Y"
                             ? "badge-success-soft"
                             : "badge-danger-soft"
                         }
                       >
-                        {c.status === "Y" ? "Yes" : "No"}
+                        {c.isallowmultisession === "Y" ? "Yes" : "No"}
                       </span>
                     </td>
 
@@ -292,7 +270,7 @@ export default function ClientsPage() {
                           <li>
                             <button
                               className="dropdown-item"
-                              onClick={() => handleEdit(c)}
+                              onClick={() => openEdit(c)}
                             >
                               Edit
                             </button>
@@ -340,8 +318,8 @@ export default function ClientsPage() {
                 <button
                   key={pageNumber}
                   className={`btn btn-sm ${page === pageNumber
-                      ? "btn-primary"
-                      : "btn-outline-secondary"
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
                     }`}
                   onClick={() => setPage(pageNumber)}
                 >
@@ -433,6 +411,15 @@ export default function ClientsPage() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <EditClientModal
+        show={editModal}
+        onClose={() => setEditModal(false)}
+        client={selectedClient}
+        BASEURL={BASEURL}
+        onSuccess={fetchClients}
+      />
+
 
     </>
   );
