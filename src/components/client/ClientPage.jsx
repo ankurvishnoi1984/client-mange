@@ -5,6 +5,7 @@ import axios from "axios";
 import { BASEURL } from "../../constant";
 import Select from "react-select";
 import EditClientModal from "./EditModal";
+import InfoModal from "./InfoModal";
 
 
 export default function ClientsPage() {
@@ -26,10 +27,16 @@ export default function ClientsPage() {
 
   const [editModal, setEditModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [infoModal, setInfoModal] = useState(false);
+  const [infoClient, setInfoClient] = useState(null);
 
   const openEdit = (client) => {
     setSelectedClient(client);
     setEditModal(true);
+  };
+    const openInfo = (client) => {
+    setInfoClient(client);
+    setInfoModal(true);
   };
 
 
@@ -267,6 +274,14 @@ export default function ClientsPage() {
                         </button>
 
                         <ul className="dropdown-menu dropdown-menu-end shadow">
+                           <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => openInfo(c)}
+                            >
+                              Info
+                            </button>
+                          </li>
                           <li>
                             <button
                               className="dropdown-item"
@@ -419,7 +434,13 @@ export default function ClientsPage() {
         BASEURL={BASEURL}
         onSuccess={fetchClients}
       />
-
+       <InfoModal
+        show={infoModal}
+        onClose={() => setInfoModal(false)}
+        client={infoClient}
+        BASEURL={BASEURL}
+        // onSuccess={fetchClients}
+      />
 
     </>
   );
