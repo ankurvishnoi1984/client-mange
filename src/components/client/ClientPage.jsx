@@ -22,6 +22,7 @@ export default function ClientsPage() {
   const [userOptions, setUserOptions] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userSearch, setUserSearch] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
 
 
 
@@ -34,7 +35,7 @@ export default function ClientsPage() {
     setSelectedClient(client);
     setEditModal(true);
   };
-    const openInfo = (client) => {
+  const openInfo = (client) => {
     setInfoClient(client);
     setInfoModal(true);
   };
@@ -52,15 +53,27 @@ export default function ClientsPage() {
     clientlogo: null,
   });
   useEffect(() => {
-    fetchClients(page);
-  }, [page]);
+    if (clientSearch) {
+      let timer = setTimeout(() => {
+        fetchClients(page);
+
+      }, 500)
+
+      return () => {
+        clearTimeout(timer)
+      }
+    }
+    else {
+      fetchClients(page);
+    }
+  }, [clientSearch, page]);
 
   const fetchClients = async (pageNumber) => {
     try {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}`
+        `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}&search=${clientSearch}`
       );
 
       setClients(res.data.data);
@@ -121,6 +134,10 @@ export default function ClientsPage() {
     }
   };
 
+  const handleClientSearch = (event) => {
+    setClientSearch(event.target.value);
+  }
+
 
 
   const handleSave = async () => {
@@ -173,9 +190,6 @@ export default function ClientsPage() {
     }
   };
 
-  const handleEdit = (client) => {
-    
-  };
   const handleDisable = (id) => {
     setClientsData(
       clientsData.map((c) =>
@@ -194,7 +208,7 @@ export default function ClientsPage() {
 
           {/* Search */}
           <div className="search-box">
-            <input placeholder="Search for..." />
+            <input type="text" placeholder="Search for..."  onChange={(e)=>handleClientSearch(e)}/>
             <button>
               <Search />
             </button>
@@ -274,7 +288,7 @@ export default function ClientsPage() {
                         </button>
 
                         <ul className="dropdown-menu dropdown-menu-end shadow">
-                           <li>
+                          <li>
                             <button
                               className="dropdown-item"
                               onClick={() => openInfo(c)}
@@ -434,12 +448,12 @@ export default function ClientsPage() {
         BASEURL={BASEURL}
         onSuccess={fetchClients}
       />
-       <InfoModal
+      <InfoModal
         show={infoModal}
         onClose={() => setInfoModal(false)}
         client={infoClient}
         BASEURL={BASEURL}
-        // onSuccess={fetchClients}
+      // onSuccess={fetchClients}
       />
 
     </>

@@ -226,8 +226,6 @@ const EditClientModal = ({
                         />
 
                     </Form.Group>
-
-                    {console.log("formData.isallowmultisession",formData)}
                     <Form.Check
                         type="checkbox"
                         label="Allow Multi Session"

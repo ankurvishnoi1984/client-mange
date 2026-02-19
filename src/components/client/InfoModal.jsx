@@ -17,21 +17,6 @@ const InfoModal = ({
     const [originalUsers, setOriginalUsers] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // ✅ handle input change
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        console.log("{ name, value, type, checked }", { name, value, type, checked })
-
-        setFormData((prev) => ({
-            ...prev,
-            [name]:
-                type === "checkbox"
-                    ? checked
-                        ? "Y"
-                        : "N"
-                    : value,
-        }));
-    };
 
     // ✅ fetch users for dropdown
     const fetchUsers = async (search = "") => {
