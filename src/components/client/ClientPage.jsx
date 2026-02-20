@@ -31,6 +31,17 @@ export default function ClientsPage() {
   const [infoModal, setInfoModal] = useState(false);
   const [infoClient, setInfoClient] = useState(null);
 
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deletingClientId, setDeletingClientId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const openDeleteModal = (id) => {
+    setDeletingClientId(id);
+    setDeleteModal(true);
+  };
+
+
+
   const openEdit = (client) => {
     setSelectedClient(client);
     setEditModal(true);
@@ -73,7 +84,7 @@ export default function ClientsPage() {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:5000/clients/getClientList?page=${pageNumber}&limit=${limit}&search=${clientSearch}`
+        `${BASEURL}/clients/getClientList?page=${pageNumber}&limit=${limit}&search=${clientSearch}`
       );
 
       setClients(res.data.data);
@@ -190,13 +201,35 @@ export default function ClientsPage() {
     }
   };
 
-  const handleDisable = (id) => {
-    setClientsData(
-      clientsData.map((c) =>
-        c.id === id ? { ...c, disabled: !c.disabled } : c
-      )
-    );
+  const handleDisable = async () => {
+    if (!deletingClientId) return;
+
+    try {
+      setDeleteLoading(true);
+
+      const res = await axios.post(
+        `${BASEURL}/clients/disableClient`,
+        {
+          clientCode: deletingClientId
+        }
+      );
+      console.log("delete res",res)
+
+      alert("Client deleted successfully");
+
+      setDeleteModal(false);
+      setDeletingClientId(null);
+
+      fetchClients(page); // 🔥 refresh list
+
+    } catch (error) {
+      console.log("Delete client error response :", error);
+      alert("Error deleting client");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
+
 
 
   return (
@@ -208,7 +241,7 @@ export default function ClientsPage() {
 
           {/* Search */}
           <div className="search-box">
-            <input type="text" placeholder="Search for..."  onChange={(e)=>handleClientSearch(e)}/>
+            <input type="text" placeholder="Search for..." onChange={(e) => handleClientSearch(e)} />
             <button>
               <Search />
             </button>
@@ -308,9 +341,9 @@ export default function ClientsPage() {
                           <li>
                             <button
                               className="dropdown-item text-warning"
-                              onClick={() => handleDisable(c.client_code)}
+                              onClick={() => openDeleteModal(c.client_code)}
                             >
-                              {c.status === "N" ? "Enable" : "Disable"}
+                              Delete
                             </button>
                           </li>
                         </ul>
@@ -440,6 +473,55 @@ export default function ClientsPage() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal
+        show={deleteModal}
+        onHide={() => setDeleteModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title style={{ fontWeight: 600 }}>
+            Confirm Delete
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <div style={{ textAlign: "center", padding: "10px 0" }}>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 500,
+                marginBottom: 6
+              }}
+            >
+              Are you sure you want to delete this client?
+            </div>
+
+            <div style={{ color: "#6c757d", fontSize: 13 }}>
+              This will disable the client and remove access.
+            </div>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setDeleteModal(false)}
+            disabled={deleteLoading}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="danger"
+            onClick={handleDisable}
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? "Deleting..." : "Yes, Delete"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
 
       <EditClientModal
         show={editModal}
