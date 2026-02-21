@@ -34,6 +34,16 @@ export default function ClientsPage() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletingClientId, setDeletingClientId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  // ✅ India phone (10 digits)
+  const phoneRegex = /^[6-9]\d{9}$/;
+
+  // ✅ shortcode: lowercase + no spaces
+  const shortcodeRegex = /^[a-z0-9_-]+$/;
+
+  // ✅ URL (simple but solid)
+  const urlRegex =
+    /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i;
 
   const openDeleteModal = (id) => {
     setDeletingClientId(id);
@@ -108,7 +118,7 @@ export default function ClientsPage() {
 
       const options = res.data.data.map(u => ({
         value: u.userid,
-        label: `${u.displayname} (${u.username})`
+        label: `${u.displayname}`
       }));
 
       setUserOptions(options);
@@ -122,7 +132,7 @@ export default function ClientsPage() {
     }
   }, [showModal])
   const totalPages = Math.ceil(total / limit);
-  const handleChange = (e) => {
+  /*const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
     if (type === "checkbox") {
@@ -143,6 +153,111 @@ export default function ClientsPage() {
         [name]: value
       }));
     }
+  };*/
+
+  const handleChange = (e) => {
+    let { name, value, type, checked, files } = e.target;
+
+    // ✅ checkbox
+    if (type === "checkbox") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked ? "Y" : "N"
+      }));
+      return;
+    }
+
+    // ✅ file
+    if (type === "file") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: files[0]
+      }));
+      return;
+    }
+
+    // =========================
+    // 🔥 FIELD SANITIZATION
+    // =========================
+
+    // ✅ phone → digits only
+    if (name === "contactnumber") {
+      value = value.replace(/\D/g, "").slice(0, 10);
+    }
+
+    // ✅ shortcode → lowercase + no spaces
+    if (name === "shortcode") {
+      value = value
+        .toLowerCase()
+        .replace(/\s/g, "")        // remove spaces
+        .replace(/[^a-z0-9_-]/g, ""); // allow only valid chars
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // =========================
+    // 🔥 INLINE VALIDATION
+    // =========================
+
+    let errorMsg = "";
+
+    if (name === "contactnumber" && value) {
+      if (!/^[6-9]\d{9}$/.test(value)) {
+        errorMsg = "Enter valid 10-digit mobile number";
+      }
+    }
+
+    if (name === "shortcode" && value) {
+      if (!/^[a-z0-9_-]+$/.test(value)) {
+        errorMsg =
+          "Only lowercase letters, numbers, _ and - allowed";
+      }
+    }
+
+    if (name === "domain_url" && value) {
+      if (
+        !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i.test(value)
+      ) {
+        errorMsg = "Enter valid URL";
+      }
+    }
+
+    setErrors(prev => ({
+      ...prev,
+      [name]: errorMsg
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name?.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.shortcode?.trim()) {
+      newErrors.shortcode = "Shortcode is required";
+    } else if (!shortcodeRegex.test(formData.shortcode)) {
+      newErrors.shortcode =
+        "Only lowercase letters, numbers, _ and - allowed";
+    }
+
+    if (!formData.contactnumber?.trim()) {
+      newErrors.contactnumber = "Contact number is required";
+    } else if (!phoneRegex.test(formData.contactnumber)) {
+      newErrors.contactnumber =
+        "Enter valid 10-digit mobile number";
+    }
+
+    if (formData.domain_url && !urlRegex.test(formData.domain_url)) {
+      newErrors.domain_url = "Enter valid URL";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleClientSearch = (event) => {
@@ -152,6 +267,7 @@ export default function ClientsPage() {
 
 
   const handleSave = async () => {
+    if (!validateForm()) return;
     try {
       const data = new FormData();
 
@@ -213,7 +329,6 @@ export default function ClientsPage() {
           clientCode: deletingClientId
         }
       );
-      console.log("delete res",res)
 
       alert("Client deleted successfully");
 
@@ -329,6 +444,7 @@ export default function ClientsPage() {
                               Info
                             </button>
                           </li>
+                          <hr className="m-0 p-0" />
                           <li>
                             <button
                               className="dropdown-item"
@@ -337,10 +453,11 @@ export default function ClientsPage() {
                               Edit
                             </button>
                           </li>
+                          <hr className="m-0 p-0" />
 
                           <li>
                             <button
-                              className="dropdown-item text-warning"
+                              className="dropdown-item"
                               onClick={() => openDeleteModal(c.client_code)}
                             >
                               Delete
@@ -417,7 +534,15 @@ export default function ClientsPage() {
 
             <Form.Group className="mb-2">
               <Form.Label>Shortcode</Form.Label>
-              <Form.Control name="shortcode" onChange={handleChange} />
+              <Form.Control
+                name="shortcode"
+                value={formData.shortcode || ""}
+                onChange={handleChange}
+                isInvalid={!!errors.shortcode}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.shortcode}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-2">
@@ -427,12 +552,30 @@ export default function ClientsPage() {
 
             <Form.Group className="mb-2">
               <Form.Label>Contact Number</Form.Label>
-              <Form.Control name="contactnumber" onChange={handleChange} />
+              <Form.Control
+                name="contactnumber"
+                value={formData.contactnumber || ""}
+                onChange={handleChange}
+                inputMode="numeric"
+                maxLength={10}
+                isInvalid={!!errors.contactnumber}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.contactnumber}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-2">
               <Form.Label>Domain URL</Form.Label>
-              <Form.Control name="domain_url" onChange={handleChange} />
+              <Form.Control
+                name="domain_url"
+                value={formData.domain_url || ""}
+                onChange={handleChange}
+                isInvalid={!!errors.domain_url}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.domain_url}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-2">
