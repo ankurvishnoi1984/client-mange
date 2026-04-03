@@ -1,17 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Routes, Route, Navigate } from "react-router-dom";
+import ClientPage from "./components/client/ClientPage";
 import './App.css'
-import ClientPage from './components/client/ClientPage'
+import CreateFieldPage from "./webcast_fields/CreateFieldPage";
+
 
 function App() {
- 
-
   return (
-    <>
-  <ClientPage/>
-    </>
-  )
+    <Routes>
+      {/* Default Route */}
+      <Route path="/" element={<Navigate to="/client" />} />
+
+      {/* Client Page */}
+      <Route path="/client" element={<ClientPage />} />
+
+      {/* Create field Page */}
+      <Route path="/create-field" element={<CreateFieldPage />} />
+
+      {/* 404 Page (optional) */}
+      <Route path="*" element={<h2>Page Not Found</h2>} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
