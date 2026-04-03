@@ -134,7 +134,7 @@ const CreateFieldPage = () => {
       alert("Fields saved successfully");
     } catch (error) {
       console.error(error);
-      alert("Failed to save fields",error);
+      alert("Failed to save fields", error);
     }
   };
   useEffect(() => {
@@ -153,6 +153,7 @@ const CreateFieldPage = () => {
 
         // keep this separately if needed
         wcfield_type: item.wcfield_type || "",
+        wcfield_code: item.wcfield_code
       }));
 
       setFields(prefilledFields);
@@ -165,6 +166,11 @@ const CreateFieldPage = () => {
     }
   }, [mappedList]);
 
+  const signInField = fields.find(
+    (field) =>
+      Number(field.wcfield_code) === Number(mandatoryField)
+  );
+
   return (
     <div className="container py-4">
 
@@ -174,19 +180,8 @@ const CreateFieldPage = () => {
       {/* MANDATORY FIELD SELECT */}
       <div className="card p-4 mb-4 shadow-sm">
         <label className="fw-semibold mb-2">
-          Select Mandatory Field
+          Configure Sign in Field
         </label>
-
-        {/* <select
-          className="form-select"
-          value={mandatoryField}
-          onChange={(e) => setMandatoryField(e.target.value)}
-        >
-          <option value="">Select</option>
-          <option value={102}>Email</option>
-          <option value={103}>Mobile</option>
-          <option value={104}>Employee Code</option>
-        </select> */}
         <select
           className="form-select"
           value={mandatoryField}
@@ -203,7 +198,99 @@ const CreateFieldPage = () => {
               </option>
             ))}
         </select>
+        {signInField && (
+          <div className="border rounded-4 p-3 bg-light mt-3">
+            <h6 className="fw-bold text-primary mb-3">
+              Sign in Field Configuration
+            </h6>
 
+            <div className="row g-3">
+              <div className="col-md-3">
+                <label>Field</label>
+                <input
+                  className="form-control rounded-pill"
+                  value={signInField.master_field}
+                  disabled
+                />
+              </div>
+
+              <div className="col-md-3">
+                <label>Label</label>
+                <input
+                  className="form-control rounded-pill"
+                  value={signInField.label}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      fields.findIndex(
+                        (f) =>
+                          Number(f.wcfield_code) === Number(mandatoryField)
+                      ),
+                      "label",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="col-md-3">
+                <label>Placeholder</label>
+                <input
+                  className="form-control rounded-pill"
+                  value={signInField.placeholder}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      fields.findIndex(
+                        (f) =>
+                          Number(f.wcfield_code) === Number(mandatoryField)
+                      ),
+                      "placeholder",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="col-md-3">
+                <label>Required</label>
+                <select
+                  className="form-select rounded-pill"
+                  value={signInField.is_required}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      fields.findIndex(
+                        (f) =>
+                          Number(f.wcfield_code) === Number(mandatoryField)
+                      ),
+                      "is_required",
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+              <div className="col-md-2">
+                <label className="fw-semibold">Order</label>
+                <input
+                  type="number"
+                  className="form-control rounded-pill text-center"
+                  value={signInField.order_index}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      fields.findIndex(
+                        (f) =>
+                          Number(f.wcfield_code) === Number(mandatoryField)
+                      ),
+                      "order_index",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
       {/* FIELD CONFIGURATION */}
@@ -218,7 +305,10 @@ const CreateFieldPage = () => {
         >
           + Add Field
         </button>
-        {fields.map((field, index) => (
+        {fields.filter(
+          (field) =>
+            Number(field.wcfield_code) !== Number(mandatoryField)
+        ).map((field, index) => (
           <div
             key={index}
             className="border rounded-4 p-4 mb-4 bg-light position-relative"
@@ -236,7 +326,9 @@ const CreateFieldPage = () => {
                   }
                 >
                   <option value="">Select</option>
-                  {fieldList.map((item) => (
+                  {fieldList
+                  .filter((field)=>field.field_code !==mandatoryField)
+                  .map((item) => (
                     <option key={item.fid} value={item.field_name}>
                       {item.field_name}
                     </option>
