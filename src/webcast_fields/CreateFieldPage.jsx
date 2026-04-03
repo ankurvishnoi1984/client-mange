@@ -1,25 +1,54 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { BASEURL } from "../constant";
+import { useParams } from "react-router-dom";
 
 const CreateFieldPage = () => {
   // MASTER FIELD LIST (from field_mst)
-  const masterFields = [
-    "Name",
-    "Email ID",
-    "Mobile",
-    "Employee Code",
-    "Location",
-    "City",
-    "State",
-    "Specialty",
-    "Firm Name",
-    "Pincode",
-    "Custom Column 1",
-    "Custom Column 2",
-    "Custom Column 3",
-  ];
+  const [fieldList, setFieldList] = useState([])
+  const [mappedList, setMappedList] = useState([])
+  const { webcastId } = useParams()
+  const [loading, setLoading] = useState(false);
+
+  const fetchFieldList = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.get(
+        `${BASEURL}/webcast/fields`
+      );
+      setFieldList(res.data)
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMappedList = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.get(
+        `${BASEURL}/webcast/webcast-field-mapping/${webcastId}`
+      );
+      setMappedList(res.data)
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFieldList();
+    fetchMappedList();
+  }, [])
 
   // STATES
-const [mandatoryField, setMandatoryField] = useState("");
+  const [mandatoryField, setMandatoryField] = useState("");
   const [fields, setFields] = useState([
     {
       master_field: "",
@@ -61,22 +90,80 @@ const [mandatoryField, setMandatoryField] = useState("");
     setFields(updated);
   };
 
-  // MANDATORY AUTO-FILL
-useEffect(() => {
-  if (!mandatoryField) return;
+  const handleSaveFields = async () => {
+    try {
+      const payload = {
+        wc_code: webcastId, // your webcast code
+        fields: fields.map((field, index) => {
+          // find selected field from master list
+          const matchedField = fieldList.find(
+            (item) => item.field_name === field.master_field
+          );
 
-  const newField = {
-    master_field: mandatoryField,
-    label: mandatoryField,
-    placeholder: `Enter ${mandatoryField}`,
-    field_type: "text",
-    is_required: "Y",
-    order_index: 1,
-    options_json: "",
+          return {
+            wcfield_code: matchedField?.field_code,
+
+            // mandatory logic
+            wcfield_type:
+              field.wcfield_code === mandatoryField ? "M" : "O",
+
+            display_order: Number(field.order_index) || index + 1,
+
+            wc_fieldlabel: field.label || field.master_field,
+
+            fieldtype: field.field_type || "text",
+
+            fieldtypevalue:
+              field.field_type === "dropdown"
+                ? field.options_json || null
+                : null,
+
+            placeholdervalue: field.placeholder || null,
+
+            isrequired: field.is_required || "N",
+
+            customfieldvalidation: null,
+          };
+        }),
+      };
+
+      console.log("payload", payload);
+
+      await axios.post(`${BASEURL}/webcast/webcast-field-mapping`, payload);
+
+      alert("Fields saved successfully");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save fields",error);
+    }
   };
+  useEffect(() => {
+    if (mappedList?.length > 0) {
+      const prefilledFields = mappedList.map((item) => ({
+        master_field: item.field_name || "",
+        label: item.wc_fieldlabel || item.field_name || "",
+        placeholder: item.placeholdervalue || "",
+        field_type: item.fieldtype || "text",
 
-  setFields([newField]); // replaces existing
-}, [mandatoryField]);
+        // use actual isrequired column
+        is_required: item.isrequired || "N",
+
+        order_index: item.display_order || "",
+        options_json: item.fieldtypevalue || "",
+
+        // keep this separately if needed
+        wcfield_type: item.wcfield_type || "",
+      }));
+
+      setFields(prefilledFields);
+      // PREFILL mandatory dropdown
+      const mandatory = mappedList.find(
+        (item) => item.wcfield_type === "M"
+      );
+
+      setMandatoryField(mandatory?.wcfield_code || "");
+    }
+  }, [mappedList]);
 
   return (
     <div className="container py-4">
@@ -85,30 +172,46 @@ useEffect(() => {
 
 
       {/* MANDATORY FIELD SELECT */}
-    <div className="card p-4 mb-4 shadow-sm">
-  <label className="fw-semibold mb-2">
-    Select Mandatory Field
-  </label>
+      <div className="card p-4 mb-4 shadow-sm">
+        <label className="fw-semibold mb-2">
+          Select Mandatory Field
+        </label>
 
-  <select
-    className="form-select"
-    value={mandatoryField}
-    onChange={(e) => setMandatoryField(e.target.value)}
-  >
-    <option value="">Select</option>
-    <option value="Email">Email</option>
-    <option value="Mobile">Mobile</option>
-    <option value="Employee Code">Employee Code</option>
-  </select>
+        {/* <select
+          className="form-select"
+          value={mandatoryField}
+          onChange={(e) => setMandatoryField(e.target.value)}
+        >
+          <option value="">Select</option>
+          <option value={102}>Email</option>
+          <option value={103}>Mobile</option>
+          <option value={104}>Employee Code</option>
+        </select> */}
+        <select
+          className="form-select"
+          value={mandatoryField}
+          onChange={(e) => setMandatoryField(e.target.value)}
+        >
+          <option value="">Select</option>
+          {fieldList
+            .filter((item) =>
+              ["Email Id", "Mobile", "Employee Code"].includes(item.field_name)
+            )
+            .map((item) => (
+              <option key={item.field_code} value={item.field_code}>
+                {item.field_name}
+              </option>
+            ))}
+        </select>
 
- 
-</div>
+
+      </div>
       {/* FIELD CONFIGURATION */}
       <div className="card p-4 shadow-sm">
         <h5 className="fw-bold mb-3 text-primary">
           Field Configurations
         </h5>
- {/* ADD FIELD BUTTON */}
+        {/* ADD FIELD BUTTON */}
         <button
           className="btn btn-primary rounded-pill px-4 mb-2 d-inline-block"
           onClick={handleAddField}
@@ -133,9 +236,9 @@ useEffect(() => {
                   }
                 >
                   <option value="">Select</option>
-                  {masterFields.map((item, i) => (
-                    <option key={i} value={item}>
-                      {item}
+                  {fieldList.map((item) => (
+                    <option key={item.fid} value={item.field_name}>
+                      {item.field_name}
                     </option>
                   ))}
                 </select>
@@ -241,8 +344,16 @@ useEffect(() => {
             </button>
           </div>
         ))}
+        {/* SUBMIT BUTTON */}
+        <div className="d-flex justify-content-end mt-4">
+          <button
+            className="btn btn-success rounded-pill px-4"
+            onClick={handleSaveFields}
+          >
+            Save Fields
+          </button>
+        </div>
 
-       
       </div>
     </div>
   );

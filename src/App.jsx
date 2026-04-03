@@ -14,7 +14,7 @@ function App() {
       <Route path="/client" element={<ClientPage />} />
 
       {/* Create field Page */}
-      <Route path="/create-field" element={<CreateFieldPage />} />
+      <Route path="/create-field/:webcastId" element={<CreateFieldPage />} />
 
       {/* 404 Page (optional) */}
       <Route path="*" element={<h2>Page Not Found</h2>} />
