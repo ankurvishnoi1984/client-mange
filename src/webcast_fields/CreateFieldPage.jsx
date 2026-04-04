@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { BASEURL } from "../constant";
 import { useParams } from "react-router-dom";
+import { FiTrash2 } from "react-icons/fi";
 
 const CreateFieldPage = () => {
   // MASTER FIELD LIST (from field_mst)
@@ -178,35 +179,40 @@ const CreateFieldPage = () => {
 
 
       {/* MANDATORY FIELD SELECT */}
-      <div className="card p-4 mb-4 shadow-sm">
-        <label className="fw-semibold mb-2">
-          Configure Sign in Field
-        </label>
-        <select
-          className="form-select"
-          value={mandatoryField}
-          onChange={(e) => setMandatoryField(e.target.value)}
-        >
-          <option value="">Select</option>
-          {fieldList
-            .filter((item) =>
-              ["Email Id", "Mobile", "Employee Code"].includes(item.field_name)
-            )
-            .map((item) => (
-              <option key={item.field_code} value={item.field_code}>
-                {item.field_name}
-              </option>
-            ))}
-        </select>
+      <div className="custom-card p-4 mb-4 shadow-sm">
+      
+           <div className="d-flex align-items-center justify-content-between mb-3">
+  <h5 className="fw-bold text-primary m-0">
+    Configure Log in Field
+  </h5>
+  <div><label className="fw-semibold">Select</label>
+  <select
+    className="form-select login-select"
+    value={mandatoryField}
+    onChange={(e) => setMandatoryField(e.target.value)}
+  >
+    <option value="">Select</option>
+    {fieldList
+      .filter((item) =>
+        ["Email Id", "Mobile", "Employee Code"].includes(item.field_name)
+      )
+      .map((item) => (
+        <option key={item.field_code} value={item.field_code}>
+          {item.field_name}
+        </option>
+      ))}
+  </select></div>
+  
+</div>
         {signInField && (
-          <div className="border rounded-4 p-3 bg-light mt-3">
-            <h6 className="fw-bold text-primary mb-3">
-              Sign in Field Configuration
-            </h6>
+          <div className=" rounded-4 p-3  mt-3">
+            {/* <h6 className="fw-bold text-primary mb-3">
+              Log in Field Configuration
+            </h6> */}
 
             <div className="row g-3">
-              <div className="col-md-3">
-                <label>Field</label>
+              <div className="col-md-2">
+                <label className="fw-semibold">Field</label>
                 <input
                   className="form-control rounded-pill"
                   value={signInField.master_field}
@@ -214,8 +220,8 @@ const CreateFieldPage = () => {
                 />
               </div>
 
-              <div className="col-md-3">
-                <label>Label</label>
+              <div className="col-md-2">
+                <label className="fw-semibold">Label</label>
                 <input
                   className="form-control rounded-pill"
                   value={signInField.label}
@@ -232,8 +238,8 @@ const CreateFieldPage = () => {
                 />
               </div>
 
-              <div className="col-md-3">
-                <label>Placeholder</label>
+              <div className="col-md-2">
+                <label className="fw-semibold">Placeholder</label>
                 <input
                   className="form-control rounded-pill"
                   value={signInField.placeholder}
@@ -250,11 +256,12 @@ const CreateFieldPage = () => {
                 />
               </div>
 
-              <div className="col-md-3">
-                <label>Required</label>
+              <div className="col-md-2">
+                <label className="fw-semibold">Required</label>
                 <select
                   className="form-select rounded-pill"
                   value={signInField.is_required}
+                  disabled
                   onChange={(e) =>
                     handleFieldChange(
                       fields.findIndex(
@@ -294,35 +301,49 @@ const CreateFieldPage = () => {
 
       </div>
       {/* FIELD CONFIGURATION */}
-      <div className="card p-4 shadow-sm">
+      <div className="custom-card p-4 shadow-sm">
         <h5 className="fw-bold mb-3 text-primary">
-          Field Configurations
+          Other Fields
         </h5>
         {/* ADD FIELD BUTTON */}
         <button
-          className="btn btn-primary rounded-pill px-4 mb-2 d-inline-block"
+        className="add-btn mb-3"
           onClick={handleAddField}
         >
           + Add Field
         </button>
-        {fields.filter(
-          (field) =>
-            Number(field.wcfield_code) !== Number(mandatoryField)
-        ).map((field, index) => (
+        <div className="p-4 pb-2 ">
+           <div className="field-header row  ">
+  <div className="col-md-2">Field</div>
+  <div className="col-md-2">Label</div>
+  <div className="col-md-2">Placeholder</div>
+  <div className="col-md-2">Type</div>
+  <div className="col-md-2">Required</div>
+  <div className="col-md-1">Order</div>
+</div>
+        </div>
+       
+     {fields
+          .map((field, originalIndex) => ({ field, originalIndex }))
+          .filter(
+            ({ field }) =>
+              Number(field.wcfield_code) !== Number(mandatoryField)
+          )
+          .map(({ field, originalIndex }) => (
           <div
-            key={index}
-            className="border rounded-4 p-4 mb-4 bg-light position-relative"
+            key={originalIndex}
+            className=" rounded-4 p-4 pb-2  mb-2  position-relative"
           >
-            <div className="row g-3">
-
+            <div className="field-row g-3">
+<div className="row g-3 align-items-center">
               {/* SELECT FIELD */}
               <div className="col-md-2">
-                <label className="fw-semibold">Field</label>
+           
                 <select
                   className="form-select rounded-pill"
                   value={field.master_field}
                   onChange={(e) =>
-                    handleFieldChange(index, "master_field", e.target.value)
+                    handleFieldChange(originalIndex, "master_field", e.target.value)
                   }
                 >
                   <option value="">Select</option>
@@ -338,38 +359,38 @@ const CreateFieldPage = () => {
 
               {/* LABEL */}
               <div className="col-md-2">
-                <label className="fw-semibold">Label</label>
+         
                 <input
                   type="text"
                   className="form-control rounded-pill"
                   value={field.label}
                   onChange={(e) =>
-                    handleFieldChange(index, "label", e.target.value)
+                    handleFieldChange(originalIndex, "label", e.target.value)
                   }
                 />
               </div>
 
               {/* PLACEHOLDER */}
               <div className="col-md-2">
-                <label className="fw-semibold">Placeholder</label>
+    
                 <input
                   type="text"
                   className="form-control rounded-pill"
                   value={field.placeholder}
                   onChange={(e) =>
-                    handleFieldChange(index, "placeholder", e.target.value)
+                    handleFieldChange(originalIndex, "placeholder", e.target.value)
                   }
                 />
               </div>
 
               {/* TYPE */}
               <div className="col-md-2">
-                <label className="fw-semibold">Type</label>
+           
                 <select
                   className="form-select rounded-pill"
                   value={field.field_type}
                   onChange={(e) =>
-                    handleFieldChange(index, "field_type", e.target.value)
+                    handleFieldChange(originalIndex, "field_type", e.target.value)
                   }
                 >
                   <option value="text">Text</option>
@@ -382,12 +403,12 @@ const CreateFieldPage = () => {
 
               {/* REQUIRED */}
               <div className="col-md-2">
-                <label className="fw-semibold">Required</label>
+         
                 <select
                   className="form-select rounded-pill"
                   value={field.is_required}
                   onChange={(e) =>
-                    handleFieldChange(index, "is_required", e.target.value)
+                    handleFieldChange(originalIndex, "is_required", e.target.value)
                   }
                 >
                   <option value="Y">Yes</option>
@@ -397,15 +418,24 @@ const CreateFieldPage = () => {
 
               {/* ORDER */}
               <div className="col-md-1">
-                <label className="fw-semibold">Order</label>
+              
                 <input
                   type="number"
                   className="form-control rounded-pill text-center"
                   value={field.order_index}
                   onChange={(e) =>
-                    handleFieldChange(index, "order_index", e.target.value)
+                    handleFieldChange(originalIndex, "order_index", e.target.value)
                   }
                 />
+              </div>
+                    <div className="col-md-1 d-flex align-items-center justify-content-center">
+  <button
+    className="remove-icon-btn"
+    onClick={() => handleRemoveField(originalIndex)}
+  >
+    <FiTrash2 size={16} />
+  </button>
+</div>
               </div>
             </div>
 
@@ -419,27 +449,19 @@ const CreateFieldPage = () => {
                   placeholder="Option1, Option2"
                   value={field.options_json || ""}
                   onChange={(e) =>
-                    handleFieldChange(index, "options_json", e.target.value)
+                    handleFieldChange(originalIndex, "options_json", e.target.value)
                   }
                 />
               </div>
             )}
 
-            {/* REMOVE BUTTON */}
-            <button
-              className="btn btn-outline-danger btn-sm position-absolute rounded-pill"
-              style={{ top: 10, right: 10 }}
-              onClick={() => handleRemoveField(index)}
-              disabled={fields.length === 1}
-            >
-              Remove
-            </button>
+   
           </div>
         ))}
         {/* SUBMIT BUTTON */}
         <div className="d-flex justify-content-end mt-4">
           <button
-            className="btn btn-success rounded-pill px-4"
+            className=" save-btn rounded-pill px-4"
             onClick={handleSaveFields}
           >
             Save Fields
