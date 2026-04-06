@@ -106,7 +106,7 @@ const CreateFieldPage = () => {
 
             // mandatory logic
             wcfield_type:
-              field.wcfield_code === mandatoryField ? "M" : "O",
+              Number(matchedField?.field_code) === Number(mandatoryField) ? "M" : "O",
 
             display_order: Number(field.order_index) || index + 1,
 
@@ -180,30 +180,30 @@ const CreateFieldPage = () => {
 
       {/* MANDATORY FIELD SELECT */}
       <div className="custom-card p-4 mb-4 shadow-sm">
-      
-           <div className="d-flex align-items-center justify-content-between mb-3">
-  <h5 className="fw-bold text-primary m-0">
-    Configure Log in Field
-  </h5>
-  <div><label className="fw-semibold">Select</label>
-  <select
-    className="form-select login-select"
-    value={mandatoryField}
-    onChange={(e) => setMandatoryField(e.target.value)}
-  >
-    <option value="">Select</option>
-    {fieldList
-      .filter((item) =>
-        ["Email Id", "Mobile", "Employee Code"].includes(item.field_name)
-      )
-      .map((item) => (
-        <option key={item.field_code} value={item.field_code}>
-          {item.field_name}
-        </option>
-      ))}
-  </select></div>
-  
-</div>
+
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <h5 className="fw-bold text-primary m-0">
+            Configure Log in Field
+          </h5>
+          <div><label className="fw-semibold">Select</label>
+            <select
+              className="form-select login-select"
+              value={mandatoryField}
+              onChange={(e) => setMandatoryField(e.target.value)}
+            >
+              <option value="">Select</option>
+              {fieldList
+                .filter((item) =>
+                  ["Email Id", "Mobile", "Employee Code"].includes(item.field_name)
+                )
+                .map((item) => (
+                  <option key={item.field_code} value={item.field_code}>
+                    {item.field_name}
+                  </option>
+                ))}
+            </select></div>
+
+        </div>
         {signInField && (
           <div className=" rounded-4 p-3  mt-3">
             {/* <h6 className="fw-bold text-primary mb-3">
@@ -307,157 +307,157 @@ const CreateFieldPage = () => {
         </h5>
         {/* ADD FIELD BUTTON */}
         <button
-        className="add-btn mb-3"
+          className="add-btn mb-3"
           onClick={handleAddField}
         >
           + Add Field
         </button>
         <div className="p-4 pb-2 ">
-           <div className="field-header row  ">
-  <div className="col-md-2">Field</div>
-  <div className="col-md-2">Label</div>
-  <div className="col-md-2">Placeholder</div>
-  <div className="col-md-2">Type</div>
-  <div className="col-md-2">Required</div>
-  <div className="col-md-1">Order</div>
-</div>
+          <div className="field-header row  ">
+            <div className="col-md-2">Field</div>
+            <div className="col-md-2">Label</div>
+            <div className="col-md-2">Placeholder</div>
+            <div className="col-md-2">Type</div>
+            <div className="col-md-2">Required</div>
+            <div className="col-md-1">Order</div>
+          </div>
         </div>
-       
-     {fields
+
+        {fields
           .map((field, originalIndex) => ({ field, originalIndex }))
           .filter(
             ({ field }) =>
               Number(field.wcfield_code) !== Number(mandatoryField)
           )
           .map(({ field, originalIndex }) => (
-          <div
-            key={originalIndex}
-            className=" rounded-4 p-4 pb-2  mb-2  position-relative"
-          >
-            <div className="field-row g-3">
-<div className="row g-3 align-items-center">
-              {/* SELECT FIELD */}
-              <div className="col-md-2">
-           
-                <select
-                  className="form-select rounded-pill"
-                  value={field.master_field}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "master_field", e.target.value)
-                  }
-                >
-                  <option value="">Select</option>
-                  {fieldList
-                  .filter((field)=>field.field_code !==mandatoryField)
-                  .map((item) => (
-                    <option key={item.fid} value={item.field_name}>
-                      {item.field_name}
-                    </option>
-                  ))}
-                </select>
+            <div
+              key={originalIndex}
+              className=" rounded-4 p-4 pb-2  mb-2  position-relative"
+            >
+              <div className="field-row g-3">
+                <div className="row g-3 align-items-center">
+                  {/* SELECT FIELD */}
+                  <div className="col-md-2">
+
+                    <select
+                      className="form-select rounded-pill"
+                      value={field.master_field}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "master_field", e.target.value)
+                      }
+                    >
+                      <option value="">Select</option>
+                      {fieldList
+                        .filter((field) => field.field_code !== mandatoryField)
+                        .map((item) => (
+                          <option key={item.fid} value={item.field_name}>
+                            {item.field_name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* LABEL */}
+                  <div className="col-md-2">
+
+                    <input
+                      type="text"
+                      className="form-control rounded-pill"
+                      value={field.label}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "label", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* PLACEHOLDER */}
+                  <div className="col-md-2">
+
+                    <input
+                      type="text"
+                      className="form-control rounded-pill"
+                      value={field.placeholder}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "placeholder", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* TYPE */}
+                  <div className="col-md-2">
+
+                    <select
+                      className="form-select rounded-pill"
+                      value={field.field_type}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "field_type", e.target.value)
+                      }
+                    >
+                      <option value="text">Text</option>
+                      <option value="dropdown">Dropdown</option>
+                      <option value="number">Number</option>
+                      <option value="date">Date</option>
+                      <option value="image">Image</option>
+                    </select>
+                  </div>
+
+                  {/* REQUIRED */}
+                  <div className="col-md-2">
+
+                    <select
+                      className="form-select rounded-pill"
+                      value={field.is_required}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "is_required", e.target.value)
+                      }
+                    >
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
+
+                  {/* ORDER */}
+                  <div className="col-md-1">
+
+                    <input
+                      type="number"
+                      className="form-control rounded-pill text-center"
+                      value={field.order_index}
+                      onChange={(e) =>
+                        handleFieldChange(originalIndex, "order_index", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="col-md-1 d-flex align-items-center justify-content-center">
+                    <button
+                      className="remove-icon-btn"
+                      onClick={() => handleRemoveField(originalIndex)}
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* LABEL */}
-              <div className="col-md-2">
-         
-                <input
-                  type="text"
-                  className="form-control rounded-pill"
-                  value={field.label}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "label", e.target.value)
-                  }
-                />
-              </div>
+              {/* DROPDOWN OPTIONS */}
+              {field.field_type === "dropdown" && (
+                <div className="mt-3">
+                  <label className="fw-semibold">Dropdown Options</label>
+                  <input
+                    type="text"
+                    className="form-control rounded-pill"
+                    placeholder="Option1, Option2"
+                    value={field.options_json || ""}
+                    onChange={(e) =>
+                      handleFieldChange(originalIndex, "options_json", e.target.value)
+                    }
+                  />
+                </div>
+              )}
 
-              {/* PLACEHOLDER */}
-              <div className="col-md-2">
-    
-                <input
-                  type="text"
-                  className="form-control rounded-pill"
-                  value={field.placeholder}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "placeholder", e.target.value)
-                  }
-                />
-              </div>
 
-              {/* TYPE */}
-              <div className="col-md-2">
-           
-                <select
-                  className="form-select rounded-pill"
-                  value={field.field_type}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "field_type", e.target.value)
-                  }
-                >
-                  <option value="text">Text</option>
-                  <option value="dropdown">Dropdown</option>
-                  <option value="number">Number</option>
-                  <option value="date">Date</option>
-                  <option value="image">Image</option>
-                </select>
-              </div>
-
-              {/* REQUIRED */}
-              <div className="col-md-2">
-         
-                <select
-                  className="form-select rounded-pill"
-                  value={field.is_required}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "is_required", e.target.value)
-                  }
-                >
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-
-              {/* ORDER */}
-              <div className="col-md-1">
-              
-                <input
-                  type="number"
-                  className="form-control rounded-pill text-center"
-                  value={field.order_index}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "order_index", e.target.value)
-                  }
-                />
-              </div>
-                    <div className="col-md-1 d-flex align-items-center justify-content-center">
-  <button
-    className="remove-icon-btn"
-    onClick={() => handleRemoveField(originalIndex)}
-  >
-    <FiTrash2 size={16} />
-  </button>
-</div>
-              </div>
             </div>
-
-            {/* DROPDOWN OPTIONS */}
-            {field.field_type === "dropdown" && (
-              <div className="mt-3">
-                <label className="fw-semibold">Dropdown Options</label>
-                <input
-                  type="text"
-                  className="form-control rounded-pill"
-                  placeholder="Option1, Option2"
-                  value={field.options_json || ""}
-                  onChange={(e) =>
-                    handleFieldChange(originalIndex, "options_json", e.target.value)
-                  }
-                />
-              </div>
-            )}
-
-   
-          </div>
-        ))}
+          ))}
         {/* SUBMIT BUTTON */}
         <div className="d-flex justify-content-end mt-4">
           <button
