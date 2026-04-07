@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { BASEURL } from "../constant";
 import { useParams } from "react-router-dom";
 import { FiTrash2 } from "react-icons/fi";
+import "./CreateField.css"
 
 const CreateFieldPage = () => {
   // MASTER FIELD LIST (from field_mst)
@@ -10,6 +11,8 @@ const CreateFieldPage = () => {
   const [mappedList, setMappedList] = useState([])
   const { webcastId } = useParams()
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
   const fetchFieldList = async () => {
     try {
@@ -86,9 +89,19 @@ const CreateFieldPage = () => {
   };
 
   // REMOVE FIELD
-  const handleRemoveField = (index) => {
-    const updated = fields.filter((_, i) => i !== index);
+  const handleRemoveField = () => {
+    const updated = fields.filter((_, i) => i !== selectedIndex);
     setFields(updated);
+    setShowDeleteModal(false);
+    setSelectedIndex(null);
+  };
+  const openDeleteModal = (index) => {
+    setSelectedIndex(index);
+    setShowDeleteModal(true);
+  };
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedIndex(null);
   };
 
   const handleSaveFields = async () => {
@@ -104,7 +117,6 @@ const CreateFieldPage = () => {
           return {
             wcfield_code: matchedField?.field_code,
 
-            // mandatory logic
             wcfield_type:
               Number(matchedField?.field_code) === Number(mandatoryField) ? "M" : "O",
 
@@ -431,7 +443,7 @@ const CreateFieldPage = () => {
                   <div className="col-md-1 d-flex align-items-center justify-content-center">
                     <button
                       className="remove-icon-btn"
-                      onClick={() => handleRemoveField(originalIndex)}
+                      onClick={() => openDeleteModal(originalIndex)}
                     >
                       <FiTrash2 size={16} />
                     </button>
@@ -458,6 +470,30 @@ const CreateFieldPage = () => {
 
             </div>
           ))}
+        {showDeleteModal && (
+          <div className="custom-modal-overlay">
+            <div className="custom-modal-box">
+              <h5 className="fw-bold mb-3">Confirm Delete</h5>
+              <p>Are you sure you want to remove this field?</p>
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                  className="btn btn-secondary rounded-pill px-4"
+                  onClick={closeDeleteModal}
+                >
+                  No
+                </button>
+
+                <button
+                  className="btn btn-danger rounded-pill px-4"
+                  onClick={handleRemoveField}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* SUBMIT BUTTON */}
         <div className="d-flex justify-content-end mt-4">
           <button
