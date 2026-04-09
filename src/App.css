@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ===== ROOT ===== */
 :root {
   --primary: #0f172a;        /* navy */
@@ -146,3 +148,4 @@ background-color: var(--bg) !important;
   font-size: 14px;
   border-radius: 8px !important;
 }
+

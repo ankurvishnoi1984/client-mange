@@ -349,40 +349,48 @@ export default function ClientsPage() {
 
   return (
     <>
-      <div className="erp-page">
+        <div className="container-fluid py-4">
 
-        {/* ================= Toolbar ================= */}
-        <div className="toolbar">
+      {/* ================= Toolbar ================= */}
+     <div className="d-flex justify-content-between align-items-center mb-4">
 
-          {/* Search */}
-          <div className="search-box">
-            <input type="text" placeholder="Search for..." onChange={(e) => handleClientSearch(e)} />
-            <button>
-              <Search />
-            </button>
-          </div>
-
-          {/* Create Client */}
-          <button className="btn-add" onClick={() => setShowModal(true)}>
-            <PlusLg className="me-2" />
-            Create Client
+        {/* Search */}
+        <div className="input-group w-auto">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search for..."
+            onChange={handleClientSearch}
+          />
+          <button className="btn btn-outline-secondary">
+            <Search />
           </button>
         </div>
 
+        {/* Create Client */}
+        <button
+          className="btn btn-primary d-flex align-items-center"
+          onClick={() => setShowModal(true)}
+        >
+          <PlusLg className="me-2" />
+          Create Client
+        </button>
+      </div>
 
-        {/* ================= Table ================= */}
-        <div className="table-wrapper">
+      {/* ================= Table ================= */}
+      <div className="card shadow-sm">
+        <div className="table-responsive">
 
-          <table className="erp-table">
+          <table className="table table-hover align-middle mb-0">
 
-            <thead>
+            <thead className="table-dark">
               <tr>
                 <th>Name</th>
-                <th>Shortcode</th>
-                <th>Contact Person</th>
-                <th>Contact Number</th>
-                <th>Domain URL</th>
-                <th>Multi Session</th>
+                <th className="text-center">Shortcode</th>
+                <th className="text-center">Contact Person</th>
+                <th className="text-center">Contact Number</th>
+                <th className="text-center">Domain URL</th>
+                <th className="text-center">Multi Session</th>
                 <th className="text-center">Action</th>
               </tr>
             </thead>
@@ -402,40 +410,35 @@ export default function ClientsPage() {
                 </tr>
               ) : (
                 clients.map((c) => (
-                  <tr
-                    key={c.client_code}   // 🔥 use API key directly
-                    className={c.status === "N" ? "row-disabled" : ""}
-                  >
+                  <tr key={c.client_code}>
                     <td className="fw-semibold">{c.name}</td>
-                    <td>{c.shortcode}</td>
-                    <td>{c.contactperson}</td>
-                    <td>{c.contactnumber}</td>
-                    <td className="text-primary">{c.domain_url}</td>
-
-                    {/* Multi session badge */}
-                    <td>
-                      <span
-                        className={
-                          c.isallowmultisession === "Y"
-                            ? "badge-success-soft"
-                            : "badge-danger-soft"
-                        }
-                      >
-                        {c.isallowmultisession === "Y" ? "Yes" : "No"}
-                      </span>
+                    <td className="text-center">{c.shortcode}</td>
+                    <td className="text-center">{c.contactperson}</td>
+                    <td className="text-center">{c.contactnumber}</td>
+                    <td className="text-center text-primary">
+                      {c.domain_url}
                     </td>
 
-                    {/* Action menu */}
+                    {/* Multi session */}
                     <td className="text-center">
-                      <div className="dropdown position-static">
+                      {c.isallowmultisession === "Y" ? (
+                        <span className="badge bg-success">Yes</span>
+                      ) : (
+                        <span className="badge bg-danger">No</span>
+                      )}
+                    </td>
+
+                    {/* Action */}
+                    <td className="text-center">
+                      <div className="dropdown">
                         <button
-                          className="icon-menu-btn"
+                          className="btn btn-light btn-sm"
                           data-bs-toggle="dropdown"
                         >
                           <ThreeDotsVertical />
                         </button>
 
-                        <ul className="dropdown-menu dropdown-menu-end shadow">
+                        <ul className="dropdown-menu dropdown-menu-end">
                           <li>
                             <button
                               className="dropdown-item"
@@ -444,7 +447,6 @@ export default function ClientsPage() {
                               Info
                             </button>
                           </li>
-                          <hr className="m-0 p-0" />
                           <li>
                             <button
                               className="dropdown-item"
@@ -453,12 +455,12 @@ export default function ClientsPage() {
                               Edit
                             </button>
                           </li>
-                          <hr className="m-0 p-0" />
-
                           <li>
                             <button
-                              className="dropdown-item"
-                              onClick={() => openDeleteModal(c.client_code)}
+                              className="dropdown-item text-danger"
+                              onClick={() =>
+                                openDeleteModal(c.client_code)
+                              }
                             >
                               Delete
                             </button>
@@ -471,53 +473,56 @@ export default function ClientsPage() {
               )}
             </tbody>
 
-
           </table>
         </div>
-        <div className="d-flex justify-content-between align-items-center mt-3">
+      </div>
 
-          <span className="text-muted">
-            Page {page} of {totalPages}
-          </span>
+      {/* ================= Pagination ================= */}
+      <div className="d-flex justify-content-between align-items-center mt-3">
 
-          <div className="d-flex gap-2">
+        <span className="text-muted">
+          Page {page} of {totalPages}
+        </span>
 
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Prev
-            </button>
+        <div className="btn-group">
 
-            {[...Array(totalPages)].slice(0, 5).map((_, i) => {
-              const pageNumber = i + 1;
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Prev
+          </button>
 
-              return (
-                <button
-                  key={pageNumber}
-                  className={`btn btn-sm ${page === pageNumber
+          {[...Array(totalPages)].slice(0, 5).map((_, i) => {
+            const pageNumber = i + 1;
+
+            return (
+              <button
+                key={pageNumber}
+                className={`btn btn-sm ${
+                  page === pageNumber
                     ? "btn-primary"
                     : "btn-outline-secondary"
-                    }`}
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </button>
-              );
-            })}
+                }`}
+                onClick={() => setPage(pageNumber)}
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
 
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </button>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </button>
 
-          </div>
         </div>
       </div>
+    </div>
       {/* ========= Create Client Modal ========= */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>

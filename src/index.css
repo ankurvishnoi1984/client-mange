@@ -40,7 +40,7 @@
 
 /* Header row */
 .table thead {
-  background: #173a63;   /* dark navy like reference */
+  background: #173a63 !important;   /* dark navy like reference */
   color: white;
 }
 
